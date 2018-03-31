@@ -3,6 +3,9 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_script import Manager
 from flask_migrate import Migrate, MigrateCommand
+from redis import StrictRedis
+from flask_session import Session
+from datetime import timedelta
 
 
 class Config(object):
@@ -14,12 +17,21 @@ class Config(object):
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     # 密钥设置
     SECRET_KEY = 'mgWj5NFlRvf8h2hGDJhSvzrR9VsxKfAF4Z6KorsK6gDOzhOAIstWcJEA9+JHj2CW'
+    # 配置redis服务器
+    REDIS_HOST = '192.168.140.128'
+    REDIS_PORT = 6379
+    # session配置
+    SESSION_TYPE = 'redis'
+    SESSION_REDIS = StrictRedis(host=REDIS_HOST, port=REDIS_PORT, db=4)
+    SESSION_USE_SIGNER = SECRET_KEY
+    PERMANENT_SESSION_LIFETIME = timedelta(days=1)
 
 app = Flask(__name__)
 # 加载配置
 app.config.from_object(Config)
-
+Session(app)
 db = SQLAlchemy(app)
+redis_client = StrictRedis(host=Config.REDIS_HOST, port=Config.REDIS_PORT)
 # 构造migrate实例，关联app与db
 Migrate(app, db)
 # 创建迁移管理类实例并关联app
