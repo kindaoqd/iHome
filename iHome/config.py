@@ -17,7 +17,7 @@ class Config(object):
     REDIS_PORT = 6379
     # session配置
     SESSION_TYPE = 'redis'
-    SESSION_REDIS = StrictRedis(host=REDIS_HOST, port=REDIS_PORT, db=4)
+    SESSION_REDIS = StrictRedis(host=REDIS_HOST, port=REDIS_PORT, db=2)
     SESSION_USE_SIGNER = True
     PERMANENT_SESSION_LIFETIME = timedelta(days=1)
 
@@ -33,4 +33,10 @@ class ProductConfig(Config):
 class UnitTestConfig(Config):
     pass
 
-
+# 根据不同场景对应为不同配置类
+configs = {
+    'default': Config,
+    'development': DevelopmentConfig,
+    'product': ProductConfig,
+    'UnitTest': UnitTestConfig
+}
