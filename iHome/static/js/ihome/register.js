@@ -15,10 +15,16 @@ function generateUUID() {
     });
     return uuid;
 }
-var imageCodeId = ""
+var imageCodeId = "";
 // 生成一个图片验证码的编号，并设置页面中图片验证码img标签的src属性
 function generateImageCode() {
-    
+    var uuid = generateUUID();
+    // 拼接url字符串，传递参数uuid,lastuuid
+    var image_code_url = '/api/1.0/verify_code?uuid=' + uuid + '&last_uuid=' + imageCodeId;
+
+    $('.image-code>img').attr('src', image_code_url);
+    // 设置后记录uuid，作为前次记录
+    imageCodeId = uuid;
 }
 
 function sendSMSCode() {
