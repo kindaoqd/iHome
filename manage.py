@@ -11,14 +11,6 @@ manager = Manager(app)
 # 添加迁移命令并起别名‘db’
 manager.add_command('db', MigrateCommand)
 
-
-@app.route('/')
-def index():
-    from iHome import redis_client
-    redis_client.set('aaaa', 'hhhhhh')
-    redis_client.save()
-    return 'index'
-
 if __name__ == '__main__':
     print app.url_map
     # app.run(debug=True)

@@ -5,6 +5,7 @@ from redis import StrictRedis
 from flask_session import Session
 from iHome.config import configs
 from flask_wtf.csrf import CSRFProtect
+from api_1_0 import api
 
 db = SQLAlchemy()
 redis_client = None
@@ -22,4 +23,6 @@ def get_app(config_name):
     db.init_app(app)  # 数据库关联app方法 源码:flask_sqlalchemy\__init__.py 683
     global redis_client  # 全局变量redis数据库，注意在使用时再导入，以免无法导入
     redis_client = StrictRedis(host=configs[config_name].REDIS_HOST, port=configs[config_name].REDIS_PORT)
+    # 注册蓝图
+    app.register_blueprint(api)
     return app
