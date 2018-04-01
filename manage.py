@@ -2,6 +2,7 @@
 from iHome import get_app, db
 from flask_script import Manager
 from flask_migrate import Migrate, MigrateCommand
+from iHome import models
 
 app = get_app('development')
 # 构造migrate实例，关联app与db
