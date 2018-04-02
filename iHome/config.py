@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from datetime import timedelta
 from redis import StrictRedis
+import logging
 
 
 class Config(object):
@@ -20,18 +21,20 @@ class Config(object):
     SESSION_REDIS = StrictRedis(host=REDIS_HOST, port=REDIS_PORT, db=2)
     SESSION_USE_SIGNER = True
     PERMANENT_SESSION_LIFETIME = timedelta(days=1)
+    LOGGING_LEVEL = logging.INFO
 
 
 class DevelopmentConfig(Config):
-    pass
+    LOGGING_LEVEL = logging.DEBUG
 
 
 class ProductConfig(Config):
     DEBUG = False
+    LOGGING_LEVEL = logging.WARNING
 
 
 class UnitTestConfig(Config):
-    pass
+    LOGGING_LEVEL = logging.DEBUG
 
 # 根据不同场景对应为不同配置类
 configs = {
