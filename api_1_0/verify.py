@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from . import verify_blue
-from flask import request, abort, make_response, jsonify
+from flask import request, abort, make_response, jsonify, current_app
 from iHome.utils.captcha.captcha import captcha
 from iHome.utils.response_code import RET, error_map
 from iHome import redis_client
@@ -16,6 +16,7 @@ def get_verify_code():
 
     # 调用验证码工具生成验证码图片
     name, text, image = captcha.generate_captcha()
+    current_app.logger.debug(u'图片验证码： '+text)
     # 拼接redis数据库key
     verify_code_key = 'verify_code:' + uuid
     # 使用redis_client保存验证码文本内容
@@ -28,7 +29,8 @@ def get_verify_code():
         # 使用redis_client删除
             redis_client.delete(last_verify_code_key, text)
     except Exception as e:
-        print e
+        # print e
+        current_app.logger.error(e)
         return jsonify(errno=RET.DATAERR, errmsg=error_map[RET.DATAERR])
     # 返回图片
     response = make_response(image)
