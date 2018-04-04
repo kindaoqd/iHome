@@ -68,7 +68,7 @@ def send_sms_code():
     if SendSMS().send_template_sms(mobile, asms_code, config.SMS_CODE_REDIS_EXPIRES/60, '1'):
         return jsonify(errno=RET.THIRDERR, errmsg=u'短信验证码发送失败')
     try:
-        redis_client.set('Mobile: '+mobile, asms_code)
+        redis_client.set('Mobile:'+mobile, asms_code)
     except Exception as e:
         logging.debug(e)
         current_app.logger.debug(e)

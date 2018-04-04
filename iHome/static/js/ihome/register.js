@@ -101,4 +101,46 @@ $(document).ready(function() {
     });
 
     // TODO: 注册的提交(判断参数是否为空)
-})
+    $('.form-register').submit(function (event) {
+        event.preventDefault();
+        var mobile = $('#mobile').val();
+        if (!mobile) {
+        $("#mobile-err span").html("请填写正确的手机号！").show();
+        return;
+    }
+        var phonecode = $('#phonecode').val();
+        if (!phonecode) {
+        $("#phone-code-err span").html("请填写正确的短信验证码！").show();
+        return;
+    }
+        var password = $('#password').val();
+        if (!password) {
+        $("#password-err span").html("请填写正确的密码！").show();
+        return;
+    }
+        var password2 = $('#password2').val();
+        if (password2 != password) {
+        $("#password2-err span").html("两次密码输入不一致！").show();
+        return;
+    }
+        var params = {
+            'mobile': mobile,
+            'phone_code': phonecode,
+            'password': password
+        };
+        $.ajax({
+            url: '/api/1.0/users',
+            type: 'post',
+            contentType: 'application/json',
+            data: JSON.stringify(params),
+            headers: {'X-CSRFToken': getCookie('csrf_token')},
+            success: function (response) {
+                if (response.errno == '0') {
+                    location.href = '/';
+                }else {
+                    alert(response.errmsg);
+                }
+            }
+        })
+    })
+});

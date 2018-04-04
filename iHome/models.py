@@ -38,7 +38,7 @@ class User(BaseModel, db.Model):
     def password(self, value):
         self.password_hash = generate_password_hash(value)
 
-    def check_passworf(self, password):
+    def check_passwor(self, password):
         """校验密码:如果匹配成功返回True.反之，返回False"""
         return check_password_hash(self.password_hash, password)
 
