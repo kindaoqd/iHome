@@ -42,9 +42,8 @@ def get_app(config_name):
     # 添加自定义转换器
     app.url_map.converters['re'] = RegexConverter
     # 注册蓝图，为解决视图中有需要使用redis导入时异常
-    from api_1_0 import api, verify_blue
+    from api_1_0 import api
     from .web_static import static_blue
     app.register_blueprint(api)
     app.register_blueprint(static_blue)
-    app.register_blueprint(verify_blue)
     return app

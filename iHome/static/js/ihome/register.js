@@ -45,7 +45,40 @@ function sendSMSCode() {
         return;
     }
 
-    // TODO: 通过ajax方式向后端接口发送请求，让后端发送短信验证码
+    // 通过ajax方式向后端接口发送请求，让后端发送短信验证码
+    var params = {
+        'uuid': imageCodeId,
+        'mobile': mobile,
+        'verify_code': imageCode
+    };
+    $.ajax({
+        url: '/api/1.0/sms_code',
+        type: 'post',
+        contentType: 'application/json',
+        data:JSON.stringify(params),
+        headers: {'X-CSRFToken': getCookie('csrf_token')},
+        success: function (response) {
+            if (response.errno == '0') {
+                 $("#phone-code-err span").html('发送成功，请注意查收并输入验证码');
+                $("#phone-code-err").show();
+                var num = 30;
+                var t = setInterval(function () {
+                    if (num == 0) {
+                        clearInterval(t);
+                        $(".phonecode-a").attr("onclick", "sendSMSCode();").html('重新发送');
+                    } else {
+                        $(".phonecode-a").html(num+'秒');
+                        num--;
+                    }
+                }, 1000)
+            } else {
+                $("#phone-code-err span").html(response.errmsg);
+                $("#phone-code-err").show();
+                $(".phonecode-a").attr("onclick", "sendSMSCode();");
+                generateImageCode();
+            }
+        }
+    })
 }
 
 $(document).ready(function() {

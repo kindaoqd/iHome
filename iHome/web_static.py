@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-from flask import Blueprint, current_app
+from flask import Blueprint, current_app, make_response
+from flask_wtf.csrf import generate_csrf
 
 static_blue = Blueprint('web_static', __name__)
 
@@ -13,4 +14,7 @@ def get_static(file_name):
         file_name = 'index.html'
     if file_name != 'favicon.ico':
         file_name = 'html/' + file_name
-    return current_app.send_static_file(file_name)
+    response = make_response(current_app.send_static_file(file_name))
+    csrf_token = generate_csrf()
+    response.set_cookie('csrf_token', csrf_token)
+    return response
