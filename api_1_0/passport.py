@@ -97,3 +97,12 @@ def login():
     session['mobile'] = user.mobile
     # 5. 返回响应
     return jsonify(errno=RET.OK, errmsg=u'登录成功')
+
+
+@api.route('/session', methods=['DELETE'])
+def logout():
+    """退出登陆"""
+    session.pop('user_id')
+    session.pop('name')
+    session.pop('mobile')
+    return jsonify(errno=RET.OK, errmsg='退出成功')
