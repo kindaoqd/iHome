@@ -63,3 +63,37 @@ def register():
     session['mobile'] = user.mobile
     # 7. 返回响应
     return jsonify(errno=RET.OK, errmsg=u'注册成功')
+
+
+@api.route('/session', methods=['POST'])
+def login():
+    """用户登录
+    1. 获取参数 mobile, password
+    2. 校验参数完整性
+    3. 查询数据库，确认mobile 与 password是否正确
+    4. 登陆用户，记录session信息
+    5. 返回响应
+    """
+    # 1. 获取参数 mobile, password
+    request_json_dict = request.json
+    mobile = request_json_dict.get('mobile')
+    password = request_json_dict.get('password')
+    # 2. 校验参数完整性
+    if not all([mobile, password]):
+        return jsonify(errno=RET.PARAMERR, errmsg=u'参数不完整')
+    if not re.match(r'1[345678][0-9]{9}', mobile):
+        return jsonify(errno=RET.PARAMERR, errmsg=u'手机号格式不合法')
+    # 3. 查询数据库，确认mobile 与 password是否正确
+    try:
+        user = User.query.filter(User.mobile == mobile).first()
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg=u'数据库查询失败')
+    if not (user or user.check_passwor(password)):
+        return jsonify(errno=RET.PARAMERR, errmsg=u'手机号或密码错误')
+    # 4. 登陆用户，记录session信息
+    session['user_id'] = user.id
+    session['name'] = user.name
+    session['mobile'] = user.mobile
+    # 5. 返回响应
+    return jsonify(errno=RET.OK, errmsg=u'登录成功')
