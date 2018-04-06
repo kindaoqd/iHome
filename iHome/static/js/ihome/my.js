@@ -23,7 +23,7 @@ function logout() {
 $(document).ready(function(){
 
     // 在页面加载完毕之后去加载个人信息
-    $.get('/users', function (response) {
+    $.get('/api/1.0/users', function (response) {
         if (response.errno == '0') {
             $('#user-name').html(response.data.name);
             $('#user-mobile').html(response.data.mobile);

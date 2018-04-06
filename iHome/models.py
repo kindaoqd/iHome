@@ -46,7 +46,7 @@ class User(BaseModel, db.Model):
         response_dict = {
             'name': self.name,
             'mobile': self.mobile,
-            'avatar_url': config.QINIU_DOMIN_PREFIX + self.avatar_url
+            'avatar_url': config.QINIU_DOMIN_PREFIX + self.avatar_url if self.avatar_url else ''
         }
         return response_dict
 

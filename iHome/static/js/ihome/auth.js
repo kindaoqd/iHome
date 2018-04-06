@@ -17,8 +17,8 @@ $(document).ready(function(){
     $.get('/api/1.0/users/auth', function (response) {
         if (response.errno == '0') {
             if (response.data.real_name && response.data.id_card) {
-                $('#real-name').val(response.data.real_name).disabled();
-                $('#id-card').val(response.data.id_card).disabled();
+                $('#real-name').val(response.data.real_name).attr('disabled', true);
+                $('#id-card').val(response.data.id_card).attr('disabled', true);
                 $(':submit').hide();
             }
         }else if (response.errno == '4101') {
@@ -41,15 +41,18 @@ $(document).ready(function(){
         $.ajax({
             url: '/api/1.0/users/auth',
             type: 'post',
-            dataType: 'application/json',
+            contentType: 'application/json',
             data: JSON.stringify(params),
             headers: {'X-CSRFToken': getCookie('csrf_token')},
             success: function (response) {
-                if (resonse.errno == '0') {
-                    showSuccessMs();
-                    $('#real-name').val(response.data.real_name).disabled();
-                    $('#id-card').val(response.data.id_card).disabled();
+                if (response.errno == '0') {
+                    showSuccessMsg();
+                    $('#real-name').attr('disabled', true);
+                    $('#id-card').attr('disabled', true);
                     $(':submit').hide();
+                }else if (response.errno == '4101') {
+                    $('.error-msg').text(response.errmsg);
+                    location.href = '/';
                 }else {
                     $('.error-msg').text(response.errmsg);
                 }

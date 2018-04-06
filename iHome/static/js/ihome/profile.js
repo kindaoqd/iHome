@@ -13,10 +13,9 @@ function getCookie(name) {
 
 $(document).ready(function () {
     // TODO: 在页面加载完毕向后端查询用户的信息
-    $.get('/users', function (response) {
+    $.get('/api/1.0/users', function (response) {
         if (response.errno == '0') {
-            $('#user-name').html(response.data.name);
-            $('#user-mobile').html(response.data.mobile);
+            $('#user-name').val(response.data.name);
             $('#user-avatar').attr('src', response.data.avatar_url)
         } else {
             alert(response.errmsg)
@@ -44,7 +43,7 @@ $(document).ready(function () {
     // TODO: 管理用户名修改的逻辑
     $('#form-name').submit(function(event){
         event.preventDefault();
-        var name = $('user-name').val();
+        var name = $('#user-name').val();
         var params = {
             'name': name
         };

@@ -59,12 +59,12 @@ def set_user_avatar():
     return jsonify(errno=RET.OK, errmsg=u'上传成功', data=config.QINIU_DOMIN_PREFIX+key)
 
 
-@api.route('/users/name')
+@api.route('/users/name', methods=['POST'])
 @login_required
 def set_user_name():
     """设置用户名"""
     user_id = g.user_id
-    new_name = request.form.get('name')
+    new_name = request.json.get('name')
     if not new_name:
         return jsonify(errno=RET.PARAMERR, errmsg=u'参数不完整')
     try:
@@ -76,7 +76,7 @@ def set_user_name():
         return jsonify(errno=RET.NODATA, errmsg=u'用户不存在')
     # 查询数据库确认用户名是否存在
     try:
-        if User.query.filter(User.name == new_name):
+        if User.query.filter(User.name == new_name).first():
             return jsonify(errno=RET.NODATA, errmsg=u'用户名已存在')
     except Exception as e:
         current_app.logger.error(e)
@@ -105,9 +105,9 @@ def set_user_auth():
     if not user:
         return jsonify(errno=RET.NODATA, errmsg=u'用户不存在')
     if request.method == 'POST':
-        request_dict = request.json
-        real_name = request_dict.get('real_name')
-        id_card = request_dict.get('id_card')
+        request_json_dict = request.json
+        real_name = request_json_dict.get('real_name')
+        id_card = request_json_dict.get('id_card')
         if not all([real_name, id_card]):
             return jsonify(errno=RET.PARAMERR, errmsg=u'参数不完整')
         # 保存数据库
@@ -120,4 +120,4 @@ def set_user_auth():
             return jsonify(errno=RET.DBERR, errmsg=u'数据保存失败')
         return jsonify(errno=RET.OK, errmsg=u'认证成功')
     response_auth_dict = user.to_auth_dict()
-    return jsonify(errno=RET.OK, errmsg=u'用户已认证', data=response_auth_dict)
+    return jsonify(errno=RET.OK, errmsg='OK', data=response_auth_dict)
