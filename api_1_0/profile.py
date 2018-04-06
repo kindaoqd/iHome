@@ -55,11 +55,12 @@ def set_user_avatar():
         db.session.commit()
     except Exception as e:
         current_app.logger.error(e)
+        db.session.rollback()
         return jsonify(errno=RET.DBERR, errmsg=u'数据保存失败')
     return jsonify(errno=RET.OK, errmsg=u'上传成功', data=config.QINIU_DOMIN_PREFIX+key)
 
 
-@api.route('/users/name', methods=['POST'])
+@api.route('/users/name', methods=['PUT'])
 @login_required
 def set_user_name():
     """设置用户名"""
@@ -87,6 +88,7 @@ def set_user_name():
         db.session.commit()
     except Exception as e:
         current_app.logger.error(e)
+        db.session.rollback()
         return jsonify(errno=RET.DBERR, errmsg=u'数据保存失败')
     # 更新session
     session['name'] = new_name
@@ -117,6 +119,7 @@ def set_user_auth():
             db.session.commit()
         except Exception as e:
             current_app.logger.error(e)
+            db.session.rollback()
             return jsonify(errno=RET.DBERR, errmsg=u'数据保存失败')
         return jsonify(errno=RET.OK, errmsg=u'认证成功')
     response_auth_dict = user.to_auth_dict()

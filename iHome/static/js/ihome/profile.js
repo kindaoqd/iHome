@@ -49,7 +49,7 @@ $(document).ready(function () {
         };
         $.ajax({
             url: '/api/1.0/users/name',
-            type: 'post',
+            type: 'put',
             contentType: 'application/json',
             data: JSON.stringify(params),
             headers: {'X-CSRFToken': getCookie('csrf_token')},
