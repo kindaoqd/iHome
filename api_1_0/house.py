@@ -29,7 +29,7 @@ def get_areas_info():
         areas_list.append(area.to_dict())
     # 记录缓存数据
     try:
-        redis_client.set('Areas', areas_list)
+        redis_client.set('Areas', areas_list, config.HOME_PAGE_DATA_REDIS_EXPIRES)
     except Exception as e:
         current_app.logger.error(e)
     return jsonify(errno=RET.OK, errmsg='OK', data=areas_list)
@@ -139,3 +139,17 @@ def house_detail(house_id):
 
     house_dict = house.to_full_dict()
     return jsonify(errno=RET.OK, errmsg='OK', data={'house': house_dict, 'user_id': user_id})
+
+
+@api.route('houses/index')
+def house_index():
+    """房屋首页"""
+    try:
+        houses = House.query.order_by(House.create_time).limit(config.HOME_PAGE_MAX_HOUSES)
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg=u'房屋查询失败')
+        house_list = []
+    for house in houses:
+        house_list.append(house.to_basic_dict())
+    return jsonify(errno=RET.OK, errmsg='OK', data=house_list)
