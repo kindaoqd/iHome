@@ -13,11 +13,10 @@ class RegexConverter(BaseConverter):
 
 def login_required(view_func):
     """登陆状态装饰器"""
-    @wraps
+    @wraps(view_func)
     def wrapper(*args, **kwargs):
-        if not 'user_id' in session:
+        if 'user_id' not in session:
             return jsonify(errno=RET.SESSIONERR, errmsg=u'用户未登录')
-        else:
-            g.user_id = session['user_id']
+        g.user_id = session['user_id']
         return view_func(*args, **kwargs)
     return wrapper

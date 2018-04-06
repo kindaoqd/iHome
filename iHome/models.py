@@ -42,6 +42,21 @@ class User(BaseModel, db.Model):
         """校验密码:如果匹配成功返回True.反之，返回False"""
         return check_password_hash(self.password_hash, password)
 
+    def to_dict(self):
+        response_dict = {
+            'name': self.name,
+            'mobile': self.mobile,
+            'avatar_url': config.QINIU_DOMIN_PREFIX + self.avatar_url
+        }
+        return response_dict
+
+    def to_auth_dict(self):
+        response_auth_dict = {
+            'real_name': self.real_name,
+            'id_card': self.id_card
+        }
+        return response_auth_dict
+
 
 class Area(BaseModel, db.Model):
     """城区"""
