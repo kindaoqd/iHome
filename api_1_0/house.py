@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from . import api
 from iHome.models import Area, Facility, House, HouseImage
-from flask import current_app, jsonify, request, g
+from flask import current_app, jsonify, request, g, session
 from iHome.utils.response_code import RET
 from iHome.utils.common import login_required
 from iHome.utils.storage import storage
@@ -68,7 +68,7 @@ def pub_house():
     new_house = House()
     new_house.user_id = user_id
     new_house.title = title
-    new_house.price = price
+    new_house.price = float(price)*100
     new_house.area_id = area_id
     new_house.address = address
     new_house.room_count = room_count
@@ -76,7 +76,7 @@ def pub_house():
     new_house.unit = unit
     new_house.capacity = capacity
     new_house.beds = beds
-    new_house.deposit = deposit
+    new_house.deposit = float(deposit)*100
     new_house.min_days = min_days
     new_house.facilities = facility_items
     try:
@@ -124,3 +124,18 @@ def upload_house_image(house_id):
         return jsonify(errno=RET.DBERR, errmsg=u'数据库保存失败')
     return jsonify(errno=RET.OK, errmsg='OK', data={'url': config.QINIU_DOMIN_PREFIX+image_key})
 
+
+@api.route('/houses/<int:house_id>')
+def house_detail(house_id):
+    """房屋详情信息"""
+    user_id = session.get('id', -1)
+    try:
+       house = House.query.get(house_id)
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg=u'房屋查询异常')
+    if not house:
+        return jsonify(errno=RET.NODATA, errmsg=u'房屋不存在')
+
+    house_dict = house.to_full_dict()
+    return jsonify(errno=RET.OK, errmsg='OK', data={'house': house_dict, 'user_id': user_id})
