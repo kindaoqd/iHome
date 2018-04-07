@@ -111,7 +111,7 @@ def logout():
 @api.route('/session')
 def login_check():
     """确认登录状态"""
-    user_name = session.get('user_name')
+    user_name = session.get('name')
     if not user_name:
         return jsonify(errno=RET.SESSIONERR, errmsg=u'未登录')
     return jsonify(errno=RET.OK, errmsg='OK', data={'user_name': user_name})

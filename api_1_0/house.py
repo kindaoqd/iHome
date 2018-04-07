@@ -125,10 +125,10 @@ def upload_house_image(house_id):
     return jsonify(errno=RET.OK, errmsg='OK', data={'url': config.QINIU_DOMIN_PREFIX+image_key})
 
 
-@api.route('/houses/<int:house_id>')
+@api.route('/houses/detail/<int:house_id>')
 def house_detail(house_id):
     """房屋详情信息"""
-    user_id = session.get('id', -1)
+    user_id = session.get('user_id', -1)
     try:
        house = House.query.get(house_id)
     except Exception as e:
@@ -141,7 +141,7 @@ def house_detail(house_id):
     return jsonify(errno=RET.OK, errmsg='OK', data={'house': house_dict, 'user_id': user_id})
 
 
-@api.route('houses/index')
+@api.route('/houses/index')
 def house_index():
     """房屋首页"""
     try:
@@ -149,7 +149,7 @@ def house_index():
     except Exception as e:
         current_app.logger.error(e)
         return jsonify(errno=RET.DBERR, errmsg=u'房屋查询失败')
-        house_list = []
+    house_list = []
     for house in houses:
         house_list.append(house.to_basic_dict())
     return jsonify(errno=RET.OK, errmsg='OK', data=house_list)

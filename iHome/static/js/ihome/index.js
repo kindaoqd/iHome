@@ -59,7 +59,7 @@ function goToSearchPage(th) {
 
 $(document).ready(function(){
     // TODO: 检查用户的登录状态
-    $.get('/api.1.0/session', function (response) {
+    $.get('/api/1.0/session', function (response) {
         if (response.errno == '0') {
             $(".top-bar>.register-login").hide();
             $('.top-bar>.user-info>a').html(response.data.user_name);
@@ -95,7 +95,7 @@ $(document).ready(function(){
     $.get('/api/1.0/areas', function (response) {
         if (response.errno == '0') {
             var area_html = template('area-list-tmpl', {'areas': response.data});
-            $('.area-list-tmpl').html(area_html);
+            $('.area-list').html(area_html);
             // TODO: 城区按钮点击之后相关操作
             $(".area-list a").click(function(e){
                 $("#area-btn").html($(this).html());
@@ -121,4 +121,4 @@ $(document).ready(function(){
         var date = $(this).datepicker("getFormattedDate");
         $("#start-date-input").val(date);
     });
-})
+});
