@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 from . import api
-from iHome.models import Area, Facility, House, HouseImage
+from iHome.models import Area, Facility, House, HouseImage, Order
 from flask import current_app, jsonify, request, g, session
 from iHome.utils.response_code import RET
 from iHome.utils.common import login_required
 from iHome.utils.storage import storage
 from iHome import redis_client, db, config
+from datetime import datetime
 
 
 @api.route('/areas')
@@ -153,3 +154,61 @@ def house_index():
     for house in houses:
         house_list.append(house.to_basic_dict())
     return jsonify(errno=RET.OK, errmsg='OK', data=house_list)
+
+
+@api.route('/houses')
+def get_house_list():
+    """获取房屋列表信息"""
+    # url:http://127.0.0.1:5000/search.html?aid=1&aname=&sd=&ed=
+    aid = request.args.get('aid')
+    sk = request.args.get('sk')
+    sd = request.args.get('sd')
+    ed = request.args.get('ed')
+    start_date = None
+    end_date = None
+    try:
+        if sd:
+            start_date = datetime.strptime(sd, '%Y-%m-%d')
+        if ed:
+            end_date = datetime.strptime(ed, '%Y-%m-%d')
+        if sd and ed:
+            assert start_date < end_date, Exception(u'日期输入有误')
+        page = int(request.args.get('p'))
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.PARAMERR, errmsg=u'参数传递异常')
+    house_query = House.query
+    try:
+        # 过滤订单时间冲突
+        conflict_orders = []
+        if start_date and end_date:
+            conflict_orders = Order.query.filter(end_date > Order.begin_date, start_date < Order.end_date).all()
+        elif start_date is not None:
+            conflict_orders = Order.query.filter(start_date > Order.begin_date, start_date < Order.end_date).all()
+        elif end_date is not None:
+            conflict_orders = Order.query.filter(end_date > Order.begin_date, end_date < Order.end_date).all()
+        if conflict_orders:
+            conflict_house_ids = [order.house_id for order in conflict_orders]  # None不可遍历
+            house_query = house_query.filter(House.id.notin_(conflict_house_ids))
+        # 筛选地区
+        if aid:
+            house_query = house_query.filter(House.area_id == aid)
+        # 排序
+        if sk == 'booking':
+            house_query = house_query.order_by(House.order_count.desc())
+        elif sk == 'price-inc':
+            house_query = house_query.order_by(House.price.asc())
+        elif sk == 'price-des':
+            house_query = house_query.order_by(House.price.desc())
+        else:
+            house_query = house_query.order_by(House.create_time.desc())
+        # 分页flask-sqlalchemy/__init__:430
+        # class BaseQuery  def paginate(self, page=None, per_page=None, error_out=True, max_per_page=None):
+        paginate = house_query.paginate(page, config.HOUSE_LIST_PAGE_CAPACITY, False)
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg=u'房屋查询失败')
+    house_list = []
+    for house in paginate.items:
+        house_list.append(house.to_basic_dict())
+    return jsonify(errno=RET.OK, errmsg='OK', data={'houses': house_list, 'total_page': paginate.pages})
