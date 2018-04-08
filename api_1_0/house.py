@@ -212,3 +212,22 @@ def get_house_list():
     for house in paginate.items:
         house_list.append(house.to_basic_dict())
     return jsonify(errno=RET.OK, errmsg='OK', data={'houses': house_list, 'total_page': paginate.pages})
+
+
+@api.route('/users/houses')
+@login_required
+def get_user_houses():
+    """获取用户发布的房源"""
+    user_id = g.user_id
+    try:
+        houses = House.query.filter(House.user_id == user_id).all()
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg=u'查询房屋失败')
+    if not houses:
+        return jsonify(errno=RET.NODATA, errmsg=u'用户未发布房源')
+    houses_list = []
+    for house in houses:
+        houses_list.append(house.to_basic_dict())
+    # current_app.logger.debug(houses_list)
+    return jsonify(errno=RET.OK, errmsg='ok', data={'houses': houses_list})

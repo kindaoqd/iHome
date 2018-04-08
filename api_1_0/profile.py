@@ -124,3 +124,21 @@ def set_user_auth():
         return jsonify(errno=RET.OK, errmsg=u'认证成功')
     response_auth_dict = user.to_auth_dict()
     return jsonify(errno=RET.OK, errmsg='OK', data=response_auth_dict)
+
+
+@api.route('/auth')
+@login_required
+def check_auth():
+    """检测用户是否实名认证"""
+    user_id = g.user_id
+    try:
+        user = User.query.get(user_id)
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg=u'查询用户失败')
+    if not user:
+        return jsonify(errno=RET.NODATA, errmsg=u'用户不存在')
+    if user.real_name and user.id_card:
+        return jsonify(errno=RET.OK, errmsg=u'用户已实名')
+    else:
+        return jsonify(errno=RET.USERERR, errmsg=u'用户未实名')
