@@ -23,7 +23,7 @@ $(document).ready(function(){
             }
         }else if (response.errno == '4101') {
             $('.error-msg').text(response.errmsg);
-            location.href = '/';
+            location.href = '/login.html';
         }else {
             $('.error-msg').text(response.errmsg);
         }

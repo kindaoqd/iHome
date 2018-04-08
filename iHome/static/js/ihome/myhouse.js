@@ -3,15 +3,16 @@ $(document).ready(function(){
     $.get('/api/1.0/auth', function (response) {
         if (response.errno != '0') {
             $(".auth-warn").show();
+        } else {
+             // TODO: 如果用户已实名认证,那么就去请求之前发布的房源
+            $.get('/api/1.0/users/houses', function (response) {
+                 if (response.errno == '0') {
+                     var housesList_html = template('houses-list-tmpl', {'houses': response.data.houses});
+                     $('#houses-list').html(housesList_html);
+                } else {
+                    alert(response.errmsg);
+                }
+            })
         }
     });
-    // TODO: 如果用户已实名认证,那么就去请求之前发布的房源
-    $.get('/api/1.0/users/houses', function (response) {
-         if (response.errno == '0') {
-             var housesList_html = template('houses-list-tmpl', {'houses': response.data.houses});
-             $('#houses-list').html(housesList_html);
-        } else {
-            alert(response.errmsg);
-        }
-    })
 });

@@ -29,7 +29,7 @@ $(document).ready(function(){
             $('#user-mobile').html(response.data.mobile);
         } else if (response.errno == '4101') {
             alert(response.errmsg);
-            location.href = '/'
+            location.href = '/login.html'
         }
     })
 });

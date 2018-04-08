@@ -28,7 +28,8 @@ $(document).ready(function(){
     // TODO: 判断用户是否登录
     $.get('/api/1.0/session', function (response) {
         if (response.errno != '0') {
-            location.href = 'login.html';
+            alert(response.errmsg);
+            location.href = '/login.html';
         }
     });
     $(".input-daterange").datepicker({
