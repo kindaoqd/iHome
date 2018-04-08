@@ -177,6 +177,14 @@ def get_house_list():
     except Exception as e:
         current_app.logger.error(e)
         return jsonify(errno=RET.PARAMERR, errmsg=u'参数传递异常')
+    # 拼接缓存key，读取缓存
+    name = 'Search:%s-%s-%s-%s' % (aid, sk, sd, ed)
+    try:
+        response_data = eval(redis_client.hget(name, page))
+        return jsonify(errno=RET.OK, errmsg='OK', data=response_data)
+    except Exception as e:
+        current_app.logger.error(e)
+    # 根据参数查询数据
     house_query = House.query
     try:
         # 过滤订单时间冲突
@@ -211,7 +219,17 @@ def get_house_list():
     house_list = []
     for house in paginate.items:
         house_list.append(house.to_basic_dict())
-    return jsonify(errno=RET.OK, errmsg='OK', data={'houses': house_list, 'total_page': paginate.pages})
+    response_data = {'houses': house_list, 'total_page': paginate.pages}
+    # 缓存查询数据结果
+    try:
+        pipeline = redis_client.pipeline()
+        pipeline.multi()
+        pipeline.hset(name, page, response_data)
+        pipeline.expire(name, config.HOUSE_LIST_REDIS_EXPIRES)
+        pipeline.execute()
+    except Exception as e:
+        current_app.logger.error(e)
+    return jsonify(errno=RET.OK, errmsg='OK', data=response_data)
 
 
 @api.route('/users/houses')

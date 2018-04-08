@@ -128,7 +128,7 @@ def set_user_auth():
 
 @api.route('/auth')
 @login_required
-def check_auth():
+def auth_check():
     """检测用户是否实名认证"""
     user_id = g.user_id
     try:

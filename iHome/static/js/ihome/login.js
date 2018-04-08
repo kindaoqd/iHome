@@ -38,6 +38,7 @@ $(document).ready(function() {
             success: function (response) {
             if (response.errno == '0') {
                 location.href = '/'
+                // history.go(-1);
             } else {
                 alert(response.errmsg)
             }
