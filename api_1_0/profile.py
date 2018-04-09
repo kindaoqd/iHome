@@ -122,8 +122,11 @@ def set_user_auth():
             db.session.rollback()
             return jsonify(errno=RET.DBERR, errmsg=u'数据保存失败')
         return jsonify(errno=RET.OK, errmsg=u'认证成功')
-    response_auth_dict = user.to_auth_dict()
-    return jsonify(errno=RET.OK, errmsg='OK', data=response_auth_dict)
+    if user.real_name and user.id_card:
+        response_auth_dict = user.to_auth_dict()
+        return jsonify(errno=RET.OK, errmsg='OK', data=response_auth_dict)
+    else:
+        return jsonify(errno=RET.USERERR, errmsg=u'用户未实名')
 
 
 @api.route('/auth')

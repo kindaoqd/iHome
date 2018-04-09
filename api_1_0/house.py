@@ -14,8 +14,9 @@ def get_areas_info():
     """获取地区信息"""
     # 查询缓存，使用eval将字符串数据转换成对象数据
     try:
-        areas_list = eval(redis_client.get('Areas'))
-        if areas_list:
+        response = redis_client.get('Areas')
+        if response:
+            areas_list = eval(response)
             return jsonify(errno=RET.OK, errmsg='OK', data=areas_list)
     except Exception as e:
         current_app.logger.error(e)
@@ -180,8 +181,10 @@ def get_house_list():
     # 拼接缓存key，读取缓存
     name = 'Search:%s-%s-%s-%s' % (aid, sk, sd, ed)
     try:
-        response_data = eval(redis_client.hget(name, page))
-        return jsonify(errno=RET.OK, errmsg='OK', data=response_data)
+        response = redis_client.hget(name, page)
+        if response:
+            response_dict = eval(response)
+            return jsonify(errno=RET.OK, errmsg='OK', data=response_dict)
     except Exception as e:
         current_app.logger.error(e)
     # 根据参数查询数据
@@ -219,17 +222,17 @@ def get_house_list():
     house_list = []
     for house in paginate.items:
         house_list.append(house.to_basic_dict())
-    response_data = {'houses': house_list, 'total_page': paginate.pages}
+    response_dict = {'houses': house_list, 'total_page': paginate.pages}
     # 缓存查询数据结果
     try:
         pipeline = redis_client.pipeline()
         pipeline.multi()
-        pipeline.hset(name, page, response_data)
+        pipeline.hset(name, page, response_dict)
         pipeline.expire(name, config.HOUSE_LIST_REDIS_EXPIRES)
         pipeline.execute()
     except Exception as e:
         current_app.logger.error(e)
-    return jsonify(errno=RET.OK, errmsg='OK', data=response_data)
+    return jsonify(errno=RET.OK, errmsg='OK', data=response_dict)
 
 
 @api.route('/users/houses')

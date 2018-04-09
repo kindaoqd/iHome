@@ -69,8 +69,9 @@ class SendSMS(REST, object):
         self.setAppId(appId)
 
     def send_template_sms(self, to, code, expires, temp_id):
-        print {code, expires}
         # result = self.sendTemplateSMS(to, {code, expires}, temp_id)
+        # 测试通过后使用以下代码进行调试
+        print u'短信验证码： ', {code, expires}
         result = {'statusCode': '000000'}
         if result.get('statusCode') == '000000':
             return 0

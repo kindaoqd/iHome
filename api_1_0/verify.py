@@ -23,7 +23,7 @@ def get_verify_code():
     verify_code_key = 'verify_code:' + uuid
     # 使用redis_client保存验证码文本内容
     try:
-        redis_client.set(verify_code_key, text)
+        redis_client.set(verify_code_key, text, config.IMAGE_CODE_REDIS_EXPIRES)
         # 如果之前有记录通过last_uuid进行删除
         if last_uuid:
             # 拼接redis数据库key
@@ -53,8 +53,8 @@ def send_sms_code():
     try:
         verify_code_server = redis_client.get('verify_code:' + uuid)
     except Exception as e:
-        logging.debug(e)
-        current_app.logger.debug(e)
+        logging.error(e)
+        current_app.logger.error(e)
         return jsonify(errno=RET.DBERR, errmsg=u'查询图片验证码失败')
 
     if not verify_code_server:
@@ -64,13 +64,13 @@ def send_sms_code():
     if verify_code.lower() != verify_code_server.lower():
         # 生成电话验证码
         return jsonify(errno=RET.PARAMERR, errmsg=u'图片验证码不正确')
-    asms_code = '%06d' % random.randint(0, 999999)
-    if SendSMS().send_template_sms(mobile, asms_code, config.SMS_CODE_REDIS_EXPIRES/60, '1'):
+    sms_code = '%06d' % random.randint(0, 999999)
+    if SendSMS().send_template_sms(mobile, sms_code, config.SMS_CODE_REDIS_EXPIRES/60, '1'):
         return jsonify(errno=RET.THIRDERR, errmsg=u'短信验证码发送失败')
     try:
-        redis_client.set('Mobile:'+mobile, asms_code)
+        redis_client.set('Mobile:'+mobile, sms_code, config.SMS_CODE_REDIS_EXPIRES)
     except Exception as e:
-        logging.debug(e)
-        current_app.logger.debug(e)
+        logging.error(e)
+        current_app.logger.error(e)
         return jsonify(errno=RET.DBERR, errmsg=u'储存短信验证码失败')
     return jsonify(errno=RET.OK, errmsg=u'短信验证码发送成功')
