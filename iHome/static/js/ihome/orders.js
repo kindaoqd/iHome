@@ -19,10 +19,46 @@ $(document).ready(function(){
     $(window).on('resize', centerModals);
 
     // TODO: 查询房客订单
+    $.get('/api/1.0/orders?role=custom', function(response){
+        if (response.errno == '0') {
+            var orders_list_html = template('orders-list-tmpl', {'orders': response.data.orders});
+            $('.orders-list').html(orders_list_html);
+            // TODO: 查询成功之后需要设置评论的相关处理
+            $(".order-comment").on("click", function(){
+            var orderId = $(this).parents("li").attr("order-id");
+            $(".modal-comment").attr("order-id", orderId);
+            });
+            $(".modal-comment").on('click', function () {
+                var orderId = $(this).attr("order-id");
+                var comment = $('#comment').val();
+                if (!comment) {
+                    alert('请输入评论内容后再提交');
+                    return;
+                }
+                var params = {
+                    'comment': comment
+                };
+                $.ajax({
+                    url: '/api/1.0/orders/'+ orderId +'/comment',
+                    type: 'put',
+                    contentType: 'application/json',
+                    data: JSON.stringify(params),
+                    headers: {'X-CSRFToken': getCookie('csrf_token')},
+                    success: function (response) {
+                        if (response.errno == '0') {
+                            $('.order-operate').hide();
+                            $('.orders-list>li[order-id='+ orderId +'] .order-text li>span').html('已完成');
+                        } else {
+                            alert(response.errmsg);
+                        }
+                    }
+                });
+            });
+        }else if(response.errno == '4101'){
+            location.href = '/login.html';
+        }else {
+            alert(response.errmsg);
+        }
+    })
 
-    // TODO: 查询成功之后需要设置评论的相关处理
-    $(".order-comment").on("click", function(){
-        var orderId = $(this).parents("li").attr("order-id");
-        $(".modal-comment").attr("order-id", orderId);
-    });
 });
