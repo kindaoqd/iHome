@@ -72,7 +72,17 @@ def get_orders():
         if role == 'custom':
             orders = Order.query.filter(Order.user_id == user_id).all()
         else:
+            """
+            ERROR in order [order.py:77]:
+            Neither 'InstrumentedAttribute' object nor 'Comparator' object associated with Order.house
+            has an attribute 'user_id'
             orders = Order.query.filter(Order.house.user_id == user_id, Order.status == 'WAIT_ACCEPT').all()
+            """
+            landlord_houses = House.query.filter(House.user_id == user_id).all()
+            landlord_house_ids = []
+            for house in landlord_houses:
+                landlord_house_ids.append(house.id)
+            orders = Order.query.filter(Order.house_id.in_(landlord_house_ids)).all()
     except Exception as e:
         current_app.logger.error(e)
         return jsonify(errno=RET.DBERR, errmsg=u'')
@@ -84,7 +94,7 @@ def get_orders():
 
 @api.route('/orders/<int:order_id>/comment', methods=['PUT'])
 @login_required
-def set_comment(order_id):
+def set_order_comment(order_id):
     """评论"""
     user_id = g.user_id
     comment = request.json.get('comment')
@@ -100,6 +110,7 @@ def set_comment(order_id):
     # 更新评论及订单状态并保存
     order.comment = comment
     order.status = 'COMPLETE'
+    order.house.order_count += 1  # 相应房屋入住次数加1
     try:
         db.session.commit()
     except Exception as e:
@@ -107,3 +118,37 @@ def set_comment(order_id):
         db.session.rollback()
         return jsonify(errno=RET.DBERR, errmsg=u'评论保存失败')
     return jsonify(errno=RET.OK, errmsg=u'评论成功')
+
+
+@api.route('/orders/<int:order_id>/status', methods=['PUT'])
+@login_required
+def set_order_status(order_id):
+    """订单状态"""
+    user_id = g.user_id
+    action = request.json.get('action')
+    if action not in ['accept', 'reject']:
+        return jsonify(errno=RET.PARAMERR, errmsg=u'参数异常')
+    try:
+        # 验证条件1.登录用户是否为订单房屋用户 2.是否该订单号 3.订单状态是否为待接单
+        order = Order.query.filter(Order.id == order_id, Order.status == 'WAIT_ACCEPT').first()
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg=u'订单查询失败')
+    if not order:
+        return jsonify(errno=RET.NODATA, errmsg=u'订单不存在')
+    if not order.house.user_id == user_id:
+        return jsonify(errno=RET.USERERR, errmsg=u'当前用户无权限操作')
+    # 更新订单状态，根据操作更新评论内容，如拒单不会进评论并保存
+    if action == 'reject':
+        order.comment = request.args.get('reason')
+        order.status = 'REJECTED'
+    else:
+        # 无支付功能直接转入待评论状态
+        order.status = 'WAIT_COMMENT'
+    try:
+        db.session.commit()
+    except Exception as e:
+        current_app.logger.error(e)
+        db.session.rollback()
+        return jsonify(errno=RET.DBERR, errmsg=u'订单状态保存失败')
+    return jsonify(errno=RET.OK, errmsg=u'操作成功')

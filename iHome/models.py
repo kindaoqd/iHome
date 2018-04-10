@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-#ihome所使用的所有模型
+# ihome所使用的所有模型
 
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -159,7 +159,7 @@ class House(BaseModel, db.Model):
 
         # 评论信息
         comments = []
-        orders = Order.query.filter(Order.house_id == self.id, Order.status == "COMPLETE", Order.comment != None) \
+        orders = Order.query.filter(Order.house_id == self.id, Order.status == "COMPLETE", Order.comment is not None) \
             .order_by(Order.update_time.desc()).limit(config.HOUSE_DETAIL_COMMENT_DISPLAY_COUNTS)
         for order in orders:
             comment = {
@@ -232,4 +232,3 @@ class Order(BaseModel, db.Model):
             "comment": self.comment if self.comment else ""
         }
         return order_dict
-
